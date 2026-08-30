@@ -5,7 +5,7 @@
 #    优先 uv tool install，其次 pipx；都没有则回退仓库内 venv +
 #    editable 安装并链接到 ~/.local/bin（绕过 macOS PEP 668）。
 #    在 dist 拷贝（无 pyproject.toml）里运行时自动改为从 git 安装。
-# 2) 把 skills/ 下的主入口与各 wewrite-* 模块符号链接到
+# 2) 把 skills/ 下的主入口、各 wewrite-* 模块与项目内 humanizer-zh 符号链接到
 #    ~/.claude/skills/ 和 ~/.agents/skills/（可用环境变量覆盖）；
 #    检测到 OpenClaw / Codex 时（~/.openclaw、~/.codex 存在）同样链接——
 #    三家均原生支持 folder-per-skill 的 Agent Skills 标准。
@@ -75,7 +75,7 @@ if [ -d skills ]; then
     fi
     mkdir -p "$SKILLS_TARGET"
     linked=0
-    for d in skills/wewrite*; do
+    for d in skills/wewrite* .agents/skills/humanizer-zh; do
       [ -f "$d/SKILL.md" ] || continue
       name="$(basename "$d")"
       ln -sfn "$REPO/$d" "$SKILLS_TARGET/$name"

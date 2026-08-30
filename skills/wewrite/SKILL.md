@@ -84,10 +84,11 @@ wewrite run step topic completed
 执行 `wewrite-write`。先保存 `artifacts.brief` 和 `artifacts.claims`，再把初稿保存到
 `artifacts.draft`；所有网页素材同步记录到本任务的 `sources.yaml`。初稿不是成稿。
 
-### 5. 编辑审稿
+### 5. 中文去 AI 味与编辑审稿
 
-执行 `wewrite-review`。事实、观点、实用性、账号声音和可读性是主标准；发现可修问题要直接
-改稿并复审。只有编辑决定为 `pass` 且 `artifacts.review_report` 显示
+执行 `wewrite-review`。它先用项目内 `humanizer-zh` 清理翻译腔、机械结构和空泛套话，再按
+事实、观点、实用性、账号声音和可读性复审；发现可修问题要直接改稿并复审。只有编辑决定为
+`pass` 且 `artifacts.review_report` 显示
 `publishable=true`，才能把最终正文写入 `artifacts.article`。工具分数只提示可能的问题。
 
 ### 6. 封存正文

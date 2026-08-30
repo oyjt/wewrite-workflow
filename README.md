@@ -136,6 +136,12 @@ cp config.example.yaml ~/.wewrite/config.yaml
 
 填入微信公众号 `appid`/`secret`（推送需要）和图片 API key（生图需要）。**写作不需要这些配置**；排版可以直接生成本地 HTML，请求配图但没有图片服务时会输出图片提示词。配了 `WEWRITE_WRITER_API_KEY` 则正文可交给独立写作模型；实际费用以你使用的服务为准。
 
+本项目额外内置项目级 `humanizer-zh`，来源为 `ai-zixun/humanizer-zh`（2026-08-31 在
+skills.sh 约 800 次安装）。`wewrite-review` 会先用它清理中文翻译腔、机械结构和空泛套话，再
+继续使用 WeWrite 原生五维复审、`wewrite score` 与 `content-eval`，不另造评分体系。
+`.agents/skills/` 已包含 Codex 项目级入口，直接在本目录打开任务即可识别 WeWrite 与
+`humanizer-zh`；需要终端里的全局 `wewrite` 命令时再运行 `bash install.sh`。
+
 ## 🧩 模块速查
 
 管道的每一段都是独立 skill。每篇文章保存在 `~/.wewrite/runs/<任务编号>/`，进度可恢复，
@@ -145,7 +151,7 @@ cp config.example.yaml ~/.wewrite/config.yaml
 |------|------|------|
 | 今天写什么 / 找几个选题 | `wewrite-topic` | 10 个评分排序的选题 |
 | 就这个选题写一篇 | `wewrite-write` | 文章任务书 + 主张与来源清单 + 初稿 |
-| 检查一下 / 这篇怎么样 | `wewrite-review` | 事实核对 + 必要改稿 + 通过后生成成稿与编辑报告 |
+| 检查一下 / 这篇怎么样 | `wewrite-review` + `humanizer-zh` | 中文去 AI 味 + 事实核对 + 必要改稿 + 成稿报告 |
 | 给这篇配个封面 | `wewrite-visual` | 一张封面图；不改原始正文 |
 | 给这篇完整配图 | `wewrite-visual` | 封面 + 必要内文图 + 带图副本 |
 | 推到草稿箱 / 换个主题 | `wewrite-publish` | 条件满足时生成微信草稿，否则保留本地 HTML |
@@ -160,7 +166,7 @@ cp config.example.yaml ~/.wewrite/config.yaml
 
 | 层 | 位置 | 内容 |
 |----|------|------|
-| Prompt | `skills/`（10 个自包含 skill） | 选题、事实、观点、实用性和表达判断，每个 skill 自带 references/ |
+| Prompt | `skills/` + `.agents/skills/humanizer-zh` | WeWrite 选题、写作、审稿模块与中文去 AI 味技能 |
 | Runtime | `wewrite` CLI（pip 包） | 打分、转 HTML、调微信 API、生图、成本路由——确定性操作 |
 | State | `~/.wewrite/`（`WEWRITE_HOME` 可覆盖） | 凭证、风格、历史、学习产物、输出文件——全部在仓库外 |
 
@@ -180,6 +186,7 @@ skill 目录复制到哪都能用；CLI 与 skill 独立安装升级；换机器
 | 主张与证据 | 区分事实、推断、意见与用户经历，逐项关联来源 | wewrite-write / `wewrite sources` |
 | 内容增强 | 按框架补足可支持的新角度、行动条件、真实细节或决策标准 | wewrite-write |
 | 编辑成稿 | 准确、观点、有用、合声、好读五项判断；不通过就直接改稿并复审 | wewrite-review / `wewrite content-eval` |
+| 中文去 AI 味 | 清理翻译腔、机械结构和空泛套话；不新增事实或作者经历 | `humanizer-zh` / wewrite-review |
 | 风险提示 | 11 项机械检查，定位套话、碎句、重复节奏等；不判断作者身份 | `wewrite score` |
 | SEO 优化 | 标题策略 / 摘要 / 关键词 / 标签 | wewrite-review |
 | 视觉 AI | 按任务设置生成封面/必要配图，生成前检查数量和预估费用 | `wewrite image-gen` |
@@ -323,7 +330,7 @@ Step 3  文章任务书 → 主张与来源 → 安全内容增强         ┐
   ↓                                                    ├ wewrite-write
 Step 4  用户风格与有效学习规则 → 初稿                  ┘
   ↓
-Step 5  编辑判断 → 必要时改稿并复审 → 成稿与编辑报告    ← wewrite-review
+Step 5  中文去 AI 味 → 编辑判断 → 改稿复审 → 成稿报告   ← humanizer-zh + wewrite-review
   ↓
 Step 6  封存原始正文 → 写入历史                         ← 主入口 wewrite
 
@@ -343,6 +350,9 @@ Step 6  封存原始正文 → 写入历史                         ← 主入�
 
 ```
 wewrite/
+├── .agents/skills/
+│   ├── wewrite*/               # 指向下方 WeWrite skills 的项目级 Codex 入口
+│   └── humanizer-zh/           # 项目级中文去 AI 味技能（skills.sh 热门通用中文方案）
 ├── skills/                   # Prompt 层：10 个自包含 skill（复制即用）
 │   ├── wewrite/                # 主入口：内容流程编排 + 配图/排版/发布可选路由
 │   ├── wewrite-style/          # 风格设置 / Onboard（onboard.md、style-template.md、style.example.yaml）

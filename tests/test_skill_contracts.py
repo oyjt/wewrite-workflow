@@ -52,6 +52,30 @@ def test_writing_and_review_require_source_ledger_and_editorial_quality():
     assert "情绪配额" in editorial
 
 
+def test_review_runs_bundled_humanizer_before_native_quality_gates():
+    main = _read("skills/wewrite/SKILL.md")
+    review = _read("skills/wewrite-review/SKILL.md")
+    installer = _read("install.sh")
+    assert "humanizer-zh" in main
+    assert ".agents/skills/humanizer-zh/SKILL.md" in review
+    assert review.index("### 2. 中文去 AI 味") < review.index("### 4. 五项编辑判断")
+    assert "不得覆盖 `artifacts.draft`" in review
+    assert "wewrite score {article_path} --json" in review
+    assert "publishable=true" in review
+    assert ".agents/skills/humanizer-zh" in installer
+
+
+def test_project_exposes_wewrite_and_humanizer_to_codex():
+    skill_root = ROOT / ".agents" / "skills"
+    expected = [path.name for path in (ROOT / "skills").glob("wewrite*")]
+    assert expected
+    for name in expected:
+        path = skill_root / name
+        assert path.is_symlink()
+        assert (path / "SKILL.md").is_file()
+    assert (skill_root / "humanizer-zh" / "SKILL.md").is_file()
+
+
 def test_all_personas_forbid_invented_personal_material():
     persona_dir = ROOT / "skills/wewrite-write/personas"
     for path in persona_dir.glob("*.yaml"):

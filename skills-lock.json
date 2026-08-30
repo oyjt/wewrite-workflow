@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "humanizer-zh": {
+      "source": "ai-zixun/humanizer-zh",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "63bfd61a93fe971ff51b489f431c5d7c569fa62ffc3f4a56ec6785ed1ec7af16"
+    }
+  }
+}
