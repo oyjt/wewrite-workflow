@@ -26,7 +26,7 @@ SRC="$REPO"
 [ -f "$REPO/pyproject.toml" ] || SRC="$PYPI_SRC"
 
 # ---- 1) wewrite CLI ----
-echo "→ 安装 wewrite CLI（来源: $SRC）..."
+echo "→ 安装 wewrite CLI（来源: ${SRC}）..."
 if command -v uv >/dev/null 2>&1; then
   uv tool install --force "$SRC"
 elif command -v pipx >/dev/null 2>&1; then
