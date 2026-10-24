@@ -14,6 +14,7 @@ optimization-results.tsv
 
 # Generated output（v2.2 起在 ~/.wewrite/，此规则防本地遗留误交）
 output/
+outputs/
 
 # User-local reference/draft articles (external 爆款范文 collection, not part of the skill)
 example/

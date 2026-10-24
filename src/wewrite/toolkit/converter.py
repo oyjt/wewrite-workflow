@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlsplit
 
 import markdown
 from bs4 import BeautifulSoup
@@ -47,7 +48,9 @@ class WeChatConverter:
           - images: list of image src references
         """
         title = self._extract_title(markdown_text)
-        markdown_text = self._strip_h1(markdown_text)
+        raw = getattr(self._theme, '_raw_data', {}) or {}
+        if not raw.get("show_title", False):
+            markdown_text = self._strip_h1(markdown_text)
 
         # Pre-process container blocks (:::dialogue, :::timeline, etc.)
         markdown_text = self._preprocess_containers(markdown_text)
@@ -97,6 +100,12 @@ class WeChatConverter:
 
         # Generate digest from plain text
         digest = self._generate_digest(html)
+
+        if raw.get("article_style"):
+            soup = BeautifulSoup("", "html.parser")
+            wrapper = soup.new_tag("section", style=raw["article_style"])
+            wrapper.append(BeautifulSoup(html, "html.parser"))
+            html = str(wrapper)
 
         return ConvertResult(html=html, title=title, digest=digest, images=images)
 
@@ -481,7 +490,35 @@ class WeChatConverter:
         text = self._process_steps(text)
         text = self._process_highlight(text)
         text = self._process_summary(text)
+        text = self._process_gallery(text)
         return text
+
+    def _process_gallery(self, text: str) -> str:
+        """Render :::gallery image blocks as native horizontal scrolling sections."""
+        def replace_gallery(match):
+            soup = BeautifulSoup(self._markdown_to_html(match.group(1)), "html.parser")
+            images = soup.find_all("img")
+            if not images:
+                raise ValueError("gallery requires at least one image")
+            for img in images:
+                if urlsplit(img.get("src", "")).scheme not in ("", "http", "https"):
+                    raise ValueError("gallery images must use a local path or HTTP(S) URL")
+            if len(images) == 1:
+                return str(images[0])
+            output = BeautifulSoup("", "html.parser")
+            group = output.new_tag("section", style="margin: 16px 0; max-width: 100%")
+            track = output.new_tag("section", style="box-sizing: border-box; width: 100%; max-width: 100%; overflow-x: scroll; -webkit-overflow-scrolling: touch; white-space: nowrap; font-size: 0; padding: 0 0 8px")
+            for index, img in enumerate(images):
+                gap = "12px" if index < len(images) - 1 else "0"
+                img["style"] = f"display: inline-block; margin: 0 {gap} 0 0; max-width: 88%; width: auto; height: auto; max-height: 360px; object-fit: contain; border-radius: 12px; vertical-align: middle"
+                track.append(img.extract())
+            group.append(track)
+            hint = output.new_tag("p", style="margin: 8px 0 0; padding: 0; color: #666666; font-size: 12px; line-height: 1.6; text-align: center")
+            hint.string = f"左右滑动查看 · 共 {len(images)} 张"
+            group.append(hint)
+            return str(group)
+
+        return re.sub(r":::gallery\n(.*?)\n:::", replace_gallery, text, flags=re.DOTALL)
 
     def _process_dialogue(self, text: str) -> str:
         """Convert :::dialogue blocks to chat bubble HTML."""

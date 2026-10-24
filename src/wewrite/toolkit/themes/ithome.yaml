@@ -1,0 +1,52 @@
+# Reference: https://mp.weixin.qq.com/s/U3RQLuP8GGZ4X9cA03scFQ (2026-10-24).
+name: "ithome"
+description: "IT之家早报风：白底红色栏目、黑色加粗新闻标题、左侧红色短线与宽行距"
+aigc_footer: false
+show_title: true
+section_numbering: false
+article_style: "background: #ffffff; padding: 16px; color: #222222; font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif; overflow-wrap: break-word;"
+colors:
+  primary: "#d22222"
+  secondary: "#c82121"
+  text: "#222222"
+  text_light: "#777777"
+  background: "#ffffff"
+  code_bg: "#f5f5f5"
+  code_color: "#444444"
+  quote_border: "#dddddd"
+  quote_bg: "#f5f5f5"
+  border_radius: "0px"
+darkmode:
+  background: "#191919"
+  text: "#e6e6e6"
+  text_light: "#aaaaaa"
+  primary: "#f07575"
+  code_bg: "#292929"
+  code_color: "#dddddd"
+  quote_bg: "#262626"
+  quote_border: "#555555"
+base_css: |
+  body { font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 15px; line-height: 2; color: #222222; background: #ffffff; max-width: 720px; margin: 0 auto; padding: 0; }
+  h1 { font-size: 28px; font-weight: 700; color: #d22222; line-height: 1.5; margin: 20px 0 28px; text-align: left; }
+  h2 { font-size: 16px; font-weight: 700; color: #222222; line-height: 2; letter-spacing: 0.05em; margin: 32px 0 10px; padding: 0 0 0 11px; border: none; background-image: linear-gradient(#d22222, #d22222); background-repeat: no-repeat; background-size: 3px 16px; background-position: left 8px; }
+  h3 { font-size: 28px; font-weight: 700; color: #d22222; line-height: 1.6; margin: 28px 0 20px; }
+  h4 { font-size: 16px; font-weight: 700; color: #222222; line-height: 2; margin: 22px 0 10px; }
+  blockquote p { margin: 0; padding: 0; color: #333333; line-height: 2; }
+  p { font-size: 15px; color: #222222; line-height: 2.1; margin: 0 0 20px; letter-spacing: 0.2px; text-align: left; }
+  h2 strong { color: #222222; }
+  strong { font-weight: 700; color: #222222; }
+  em { font-size: 13px; font-style: normal; color: #777777; }
+  blockquote { background: #f5f5f5; color: #333333; border: none; border-left: 3px solid #dddddd; border-radius: 0; padding: 14px 16px; margin: 22px 0 26px; }
+  h2 code { font-size: 12px; color: #d22222; background: transparent; padding: 0; }
+  pre code { color: #444444; background: transparent; padding: 0; }
+  code { font-family: Consolas, Menlo, monospace; font-size: 13px; color: #444444; background: #f5f5f5; padding: 2px 4px; border-radius: 2px; }
+  pre { background: #f5f5f5; padding: 14px; margin: 20px 0; overflow-x: auto; line-height: 1.7; }
+  a { color: #d22222; text-decoration: none; }
+  ul { margin: 12px 0 24px; padding-left: 22px; }
+  ol { margin: 12px 0 24px; padding-left: 22px; }
+  li { font-size: 15px; color: #222222; line-height: 2; margin: 8px 0; }
+  img { max-width: 100%; height: auto; display: block; margin: 18px auto 28px; border-radius: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 20px 0; }
+  th { background: #f8f8f8; color: #222222; font-weight: 700; border: 1px solid #e5e5e5; padding: 10px; text-align: left; }
+  td { color: #222222; border: 1px solid #e5e5e5; padding: 10px; text-align: left; }
+  hr { border: none; border-top: 1px solid #eeeeee; margin: 28px 0; }

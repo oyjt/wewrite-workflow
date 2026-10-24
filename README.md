@@ -4,13 +4,13 @@
 
 **一句话完成选题、素材、写作和审稿——配图、排版与发布随时按需追加**
 
-选题 · 写作 · 编辑审稿 · 可选 AI 配图 · 18 主题排版 · 草稿箱推送 · 多平台改写 · 越用越像你
+选题 · 写作 · 编辑审稿 · 可选 AI 配图 · 20 主题排版 · 草稿箱推送 · 多平台改写 · 越用越像你
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/imraywang/wewrite/blob/main/LICENSE)
 [![Checks](https://github.com/imraywang/wewrite/actions/workflows/checks.yml/badge.svg)](https://github.com/imraywang/wewrite/actions/workflows/checks.yml)
 [![PyPI](https://img.shields.io/pypi/v/wewrite?color=059669&label=PyPI)](https://pypi.org/project/wewrite/)
 [![Skills](https://img.shields.io/badge/skills-1%20主入口%20%2B%209%20模块-8b5cf6)](#-模块速查)
-[![Themes](https://img.shields.io/badge/themes-18%20%2B%20learn--theme-f59e0b)](#-排版引擎)
+[![Themes](https://img.shields.io/badge/themes-20%20%2B%20learn--theme-f59e0b)](#-排版引擎)
 [![Agents](https://img.shields.io/badge/Claude%20Code%20·%20Codex%20·%20OpenClaw%20·%20Hermes-supported-6366f1)](#-快速开始)
 
 </div>
@@ -39,7 +39,7 @@
 - **写出能直接用的文章**：先明确读者问题、核心判断与证据边界，再写初稿；审稿不通过就直接改稿并复审，禁止编造作者经历。
 - **7 套写作人格**：像选主题一样选文风，从深夜老友到冷静分析师，一行配置切换。
 - **越用越像你**：编辑飞轮（学习你的修改）+ 范文风格库（SICO 式 few-shot）+ 阅读数据回填反哺选题。
-- **18 主题排版引擎**：样式全内联、微信兼容修复、暗黑模式；`learn-theme` 还能从任意公众号文章学习一套新主题。
+- **20 主题排版引擎**：样式全内联、微信兼容修复、暗黑模式；`learn-theme` 还能从任意公众号文章学习一套新主题。
 - **一稿多发**：小红书图文 / 抖音口播稿，内容级真改，检查编辑质量和源稿相似度。
 - **成本可控**：可选把正文出稿路由给独立写作模型，实际费用取决于所选服务、模型和文章长度。
 
@@ -60,7 +60,7 @@
 </tr>
 </table>
 
-> 全部 18 个主题：装好后 `wewrite gallery` 在浏览器里并排对比 + 一键复制。
+> 全部 20 个主题：装好后 `wewrite gallery` 在浏览器里并排对比 + 一键复制。
 
 ## ✅ 适合 / ❌ 不适合
 
@@ -190,7 +190,7 @@ skill 目录复制到哪都能用；CLI 与 skill 独立安装升级；换机器
 | 风险提示 | 11 项机械检查，定位套话、碎句、重复节奏等；不判断作者身份 | `wewrite score` |
 | SEO 优化 | 标题策略 / 摘要 / 关键词 / 标签 | wewrite-review |
 | 视觉 AI | 按任务设置生成封面/必要配图，生成前检查数量和预估费用 | `wewrite image-gen` |
-| 排版发布 | 18+ 主题 + 微信兼容修复 + 暗黑模式 | `wewrite preview/publish` |
+| 排版发布 | 20+ 主题 + 微信兼容修复 + 暗黑模式 | `wewrite preview/publish` |
 | 多平台改写 | 一稿 → 小红书/抖音，内容级真改 + 原创度门 | wewrite-rewrite |
 | 效果复盘 | 微信数据分析 API 回填阅读数据，反哺选题 | `wewrite stats` |
 | 范文风格库 | 从文章提取结构与节奏；第三方内容不提供观点和个人经历 | `wewrite exemplar` |
@@ -248,9 +248,13 @@ wewrite themes     # 列出主题名称
 | 文艺 | `warm-editorial`、`sspai`、`ink`、`elegant-rose` |
 | 商务 | `bold-navy`、`minimal-gold`、`bold-green` |
 | 风格 | `bauhaus`、`focus-red`、`midnight` |
-| 专属 | `impeccable`、`lobster-notes` |
+| 专属 | `impeccable`、`lobster-notes`、`juya-ai`、`ithome` |
 
 所有主题均支持微信暗黑模式。`wewrite learn-theme <url>` 学到的新主题存在 `~/.wewrite/themes/`，加载时优先于内置主题。
+
+`juya-ai` 参考橘鸦 AI 的公众号排版，提供暖白正文容器、圆角标题条、摘要卡片与术语标签。
+同一事件的多张图片可用 `:::gallery` 包住 Markdown 图片，自动生成横向滚动区域和
+“左右滑动查看 · 共 N 张”提示；单张图片不显示提示。详见 [主题与写作指南](docs/juya-ai-style.md)。
 
 另有四个排版细节自动处理：**产物合规校验**（`wewrite validate`，preview/publish 自动跑，拦截会被微信过滤的写法）、**粘贴加固**（preview 产物自动做 `<span leaf>` 包裹，复制进编辑器不掉样式；API 发布路径无需）、**GIF 角标**（动图自动加右上角标签）、**H2 章节编号**（主题 YAML 设 `section_numbering: true` 启用）。
 
@@ -370,7 +374,7 @@ wewrite/
 │   ├── paths.py                # 状态目录解析（$WEWRITE_HOME → ~/.wewrite）
 │   ├── migrate.py              # 旧状态一次性迁移
 │   ├── commands/               # run / sources / diagnose / score / content-eval / hotspots / search-articles / seo / stats / learn-* / exemplar / fetch-article / llm-write / similarity / build-playbook
-│   └── toolkit/                # converter / theme / publisher / wechat_api / image_gen + 18 个内置主题
+│   └── toolkit/                # converter / theme / publisher / wechat_api / image_gen + 20 个内置主题
 │
 ├── pyproject.toml            # CLI 打包定义
 ├── config.example.yaml       # API 配置模板

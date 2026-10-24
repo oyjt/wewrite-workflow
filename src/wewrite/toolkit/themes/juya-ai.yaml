@@ -1,0 +1,106 @@
+# References: daily.juya.uk/issues/2026-10-24/ and mp.weixin.qq.com/s/fSkVo0b8poXVMKZWtjW50Q
+name: "juya-ai"
+description: "橘鸭 AI：公众号暖白底、圆角标题条、摘要卡片、深红术语标签与陶土橙点缀"
+aigc_footer: false
+show_title: true
+article_style: "background: #faf9f5; padding: 20px 14px; color: #141414; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; word-break: break-word; overflow-wrap: break-word;"
+colors:
+  primary: "#c96442"
+  secondary: "#b5532f"
+  text: "#141414"
+  text_light: "#6e6d6a"
+  background: "#faf9f5"
+  code_bg: "#f0efeb"
+  code_color: "#5c1616"
+  quote_border: "#d1cfcc"
+  quote_bg: "#ffffff"
+  border_radius: "12px"
+darkmode:
+  background: "#211d18"
+  text: "#ece7de"
+  text_light: "#b7aa99"
+  primary: "#e8d9c5"
+  code_bg: "#30281f"
+  code_color: "#efad7c"
+  quote_bg: "#30281f"
+  quote_border: "#efad7c"
+base_css: |
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: #1a1a1a;
+    background: #faf9f5;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0;
+    word-wrap: break-word;
+  }
+  h1 {
+    color: #c96442;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 20px 0 24px;
+    padding: 2px 10px;
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+  h2 {
+    color: #141413;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 30px 0 15px;
+    padding: 12px 18px;
+    background: #f0eee6;
+    border: none;
+    border-radius: 12px;
+    letter-spacing: 0.04em;
+  }
+  h3 {
+    color: #37352f;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 22px 0 10px;
+    padding: 0;
+    border: none;
+  }
+  h4 { color: #2c1810; font-size: 16px; font-weight: 600; line-height: 1.6; margin: 22px 0 12px; }
+  blockquote p { color: #37352f; margin: 0; padding: 0; line-height: 1.8; }
+  p { font-size: 15px; line-height: 1.8; color: #141414; margin: 8px 0; padding: 5px 0; letter-spacing: 0.04em; text-align: left; }
+  strong { color: #1f0c03; font-weight: 700; }
+  em { color: #6e6d6a; font-style: normal; }
+  a { color: #b5532f; text-decoration: underline; word-break: break-all; }
+  blockquote {
+    background: #ffffff;
+    border: 1px solid #d1cfcc;
+    border-radius: 24px;
+    padding: 12px 18px;
+    margin: 22px 0;
+    color: #37352f;
+  }
+  h2 code { color: #c96442; background: #fdfcfa; font-size: 13px; }
+  li code { color: #c96442; background: #fdfcfa; font-size: 13px; }
+  pre code { background: transparent; border: none; padding: 0; color: #383a42; }
+  code {
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    font-size: 14px;
+    color: #5c1616;
+    background: #f0efeb;
+    border: 1px solid #d1cfcc;
+    padding: 2px 4px;
+    margin: 0 2px;
+    border-radius: 8px;
+    letter-spacing: 0;
+  }
+  pre { background: #ffffff; border: 1px solid #dad8d4; border-radius: 12px; padding: 12px 20px; margin: 20px 0; overflow-x: auto; line-height: 1.75; }
+  ul { padding-left: 22px; margin: 16px 0; }
+  ol { padding-left: 22px; margin: 16px 0; }
+  li { font-size: 15px; line-height: 1.8; color: #141414; margin: 5px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; }
+  th { background: #f8f4e6; color: #2c1810; border: 1px solid #d9cfc0; font-weight: 700; text-align: left; padding: 10px 12px; }
+  td { border: 1px solid #d9cfc0; color: #1a1a1a; text-align: left; padding: 10px 12px; }
+  img { display: block; max-width: 100%; height: auto; margin: 18px auto; border-radius: 12px; }
+  hr { height: 0; border: none; border-top: 1px solid #d9cfc0; margin: 28px 0; }
