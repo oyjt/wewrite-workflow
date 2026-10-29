@@ -190,7 +190,7 @@ def get_inline_css_rules(theme: Theme) -> dict[str, dict[str, str]]:
         # Build property dict for this rule
         props: dict[str, str] = {}
         for prop in rule.style:
-            props[prop.name] = prop.value
+            props[prop.name] = prop.value + (" !important" if prop.priority else "")
 
         if not props:
             continue

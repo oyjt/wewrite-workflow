@@ -32,9 +32,20 @@ blacklist:
   topics: ["禁忌话题1"]
 reference_accounts: ["参考账号1", "参考账号2"]
 cover_style: "封面风格描述"
+cover_reference: "/path/to/approved-cover.png"  # 参考构图和表达方式，仍按当篇内容生成
 cover_template: "/path/to/cover.png"  # 设置后跳过 AI 生成封面
 author: "署名"
+body_metadata: "公众号正文是否保留标题和作者；按账号已确认偏好设置"
+spacing_preference: "引用、图片和图注的间距偏好"
+engagement_footer:
+  enabled: false           # 只有账号已要求时启用
+  text: ["简短点赞收藏引导", "关注引导"]
+  placement: "after_references"
+  account_card_blank_lines: 3  # 留空行供用户手动插入名片，不写可见占位提示
 ```
+
+资讯账号可在 `editorial_layout` 中记录 `daily_titles`、`illustrations`、`gallery` 等已确认偏好。
+这些字段供写作和发布技能读取；不是 CLI 自动排版开关，最终 HTML 仍须检查。
 
 ## 可用排版主题
 

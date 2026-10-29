@@ -44,6 +44,7 @@ theme: "professional-clean"
 
 # 封面
 cover_style: "简洁科技感，蓝色调，扁平化设计"
+# cover_reference: "/path/to/approved-cover.png"  # 仅作视觉参考，每篇仍重新设计
 # cover_template: ""  # 设置后跳过 AI 生成，直接使用该文件
 
 # 署名

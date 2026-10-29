@@ -177,9 +177,13 @@ class WeChatConverter:
             src = img.get("src", "")
             if src:
                 images.append(src)
+            parent = img.parent
+            if parent.name == "p" and not parent.get_text(strip=True) and len(parent.find_all("img")) == 1:
+                parent["style"] = "margin: 0; padding: 0; line-height: 0"
             # GIF 角标：动图上方右对齐小标签（不用 absolute 定位——微信不支持）
             is_gif = src.lower().split("?")[0].endswith(".gif")
-            if is_gif:
+            # A block badge would force each gallery image onto a separate line.
+            if is_gif and "white-space: nowrap" not in img.parent.get("style", ""):
                 badge = soup.new_tag("section")
                 badge["style"] = "display: flex; justify-content: flex-end; margin: 24px 0 4px"
                 tag = soup.new_tag("span")
@@ -191,8 +195,9 @@ class WeChatConverter:
             # Ensure responsive image styles
             existing = img.get("style", "")
             if "max-width" not in existing:
-                margin = "margin: 4px auto 24px" if is_gif else "margin: 24px auto"
-                additions = f"max-width: 100%; height: auto; display: block; {margin}"
+                fallback_margin = "4px auto 24px" if is_gif else "24px auto"
+                margin = self._css_rules.get("img", {}).get("margin", fallback_margin)
+                additions = f"max-width: 100%; height: auto; display: block; margin: {margin}"
                 img["style"] = f"{existing}; {additions}" if existing else additions
         return str(soup), images
 

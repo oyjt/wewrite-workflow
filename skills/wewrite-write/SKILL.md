@@ -62,6 +62,9 @@ wewrite sources add --url "{原始页面}" --title "{标题}" --publisher "{发�
 记忆或范文标为 `verified`；尤其不得把模型记忆标为 `verified`。把事实、推断、意见和用户经历写入 `artifacts.claims`，引用
 `sources.yaml` 的来源编号。`unsupported` 的主张不得进入初稿。
 
+资讯稿同时读取 `style.yaml` 的 `editorial_layout` 和 `news_sources`。按账号偏好综合指定来源，
+记录每条新闻实际存在的相关原图、动图及出处；多张素材逐张判断信息价值，不默认每条只取一张。
+
 搜索不可用时，只写不依赖最新数据的分析和有边界的判断；删除无法核实的数字、引述和
 “研究显示”，并在任务中记录降级。
 
