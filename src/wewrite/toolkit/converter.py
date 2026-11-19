@@ -73,23 +73,23 @@ class WeChatConverter:
         # CJK fix: move punctuation outside bold tags
         html = self._fix_cjk_bold_punctuation(html)
 
-        # CJK fix: convert ul/ol to section-based lists (WeChat renders native lists unreliably)
+        # Read manually written sources before converting ordinary lists.
+        bulleted_references = "ul.article-references" in self._css_rules
+        if bulleted_references:
+            html = self._format_bulleted_references(html)
+
+        # CJK fix: convert ordinary ul/ol to section-based lists
         html = self._convert_lists_to_sections(html)
 
-        # Convert external links to footnotes (WeChat blocks external links)
-        html = self._convert_links_to_footnotes(html)
+        # WeChat blocks external links, so convert them to footnotes.
+        if not bulleted_references:
+            html = self._convert_links_to_footnotes(html)
 
         # Apply inline CSS from theme
         html = self._apply_inline_styles(html)
 
         # Apply WeChat compatibility fixes
         html = self._apply_wechat_fixes(html)
-
-        # 净化不兼容标签/属性（codehilite 等库会残留 div/class）
-        html = self._sanitize_for_wechat(html)
-
-        # Inject dark mode attributes
-        html = self._inject_darkmode(html)
 
         # Append AIGC declaration footer by default（合规：AI 生成/辅助内容需标识；
         # 主题或配置显式设 aigc_footer: false 才关闭）。
@@ -106,6 +106,9 @@ class WeChatConverter:
             wrapper = soup.new_tag("section", style=raw["article_style"])
             wrapper.append(BeautifulSoup(html, "html.parser"))
             html = str(wrapper)
+
+        # Keep styling roles until dark colors are assigned.
+        html = self._sanitize_for_wechat(self._inject_darkmode(html))
 
         return ConvertResult(html=html, title=title, digest=digest, images=images)
 
@@ -172,18 +175,33 @@ class WeChatConverter:
     def _process_images(self, html: str) -> tuple[str, list[str]]:
         """Extract image references and ensure responsive styling."""
         soup = BeautifulSoup(html, "html.parser")
+        compact_captions = "p.media-caption" in self._css_rules
+        if compact_captions:
+            for hint in soup.select("p.gallery-caption"):
+                caption = self._caption_after(hint.parent)
+                if caption:
+                    hint.insert(0, " · ")
+                    hint.insert(0, *list(caption.em.contents))
+                    caption.decompose()
         images = []
         for img in soup.find_all("img"):
             src = img.get("src", "")
             if src:
                 images.append(src)
             parent = img.parent
-            if parent.name == "p" and not parent.get_text(strip=True) and len(parent.find_all("img")) == 1:
+            standalone = parent.name == "p" and not parent.get_text(strip=True) and len(parent.find_all("img")) == 1
+            if standalone:
                 parent["style"] = "margin: 0; padding: 0; line-height: 0"
+                if compact_captions:
+                    img["class"] = [*img.get("class", []), "media-wide"]
+                    caption = self._caption_after(parent)
+                    if caption:
+                        caption["class"] = [*caption.get("class", []), "media-caption", "single-image-caption"]
             # GIF 角标：动图上方右对齐小标签（不用 absolute 定位——微信不支持）
             is_gif = src.lower().split("?")[0].endswith(".gif")
-            # A block badge would force each gallery image onto a separate line.
-            if is_gif and "white-space: nowrap" not in img.parent.get("style", ""):
+            # A block badge would force gallery images onto separate lines.
+            in_gallery = "white-space: nowrap" in parent.get("style", "") or parent.get("class") == ["gallery-slide"]
+            if is_gif and not in_gallery:
                 badge = soup.new_tag("section")
                 badge["style"] = "display: flex; justify-content: flex-end; margin: 24px 0 4px"
                 tag = soup.new_tag("span")
@@ -191,7 +209,7 @@ class WeChatConverter:
                                 "padding: 2px 8px; border-radius: 4px; letter-spacing: 1px")
                 tag.string = "GIF"
                 badge.append(tag)
-                img.insert_before(badge)
+                (parent if standalone else img).insert_before(badge)
             # Ensure responsive image styles
             existing = img.get("style", "")
             if "max-width" not in existing:
@@ -201,9 +219,22 @@ class WeChatConverter:
                 img["style"] = f"{existing}; {additions}" if existing else additions
         return str(soup), images
 
+    @staticmethod
+    def _caption_after(media):
+        caption = media.find_next_sibling()
+        if caption and caption.name == "p" and caption.em:
+            if [node for node in caption.contents if str(node).strip()] == [caption.em]:
+                return caption
+        return None
+
     def _apply_inline_styles(self, html: str) -> str:
         """Apply theme CSS rules as inline styles on matching elements."""
         soup = BeautifulSoup(html, "html.parser")
+
+        if "code.short-token" in self._css_rules:
+            for code in soup.find_all("code"):
+                if not code.find_parent("pre") and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._+-]{0,17}", code.get_text()):
+                    code["class"] = [*code.get("class", []), "short-token"]
 
         for selector, styles in self._css_rules.items():
             # Skip body — we don't wrap in body tag
@@ -314,10 +345,26 @@ class WeChatConverter:
         primary = self._theme.colors.get("primary", "#2563eb")
 
         for ul in soup.find_all("ul"):
+            if "article-references" in ul.get("class", []):
+                continue
+            title = ul.find_previous_sibling()
+            is_overview = (
+                "p.article-overview-title" in self._css_rules
+                and title is not None and title.name == "p" and title.strong is not None
+                and title.get_text(strip=True) == title.strong.get_text(strip=True)
+                and title.get_text(strip=True).endswith("资讯概览")
+            )
+            if is_overview:
+                title["class"] = [*title.get("class", []), "article-overview-title"]
             section = soup.new_tag("section")
             for li in ul.find_all("li", recursive=False):
-                item = soup.new_tag("section", style=f"display: flex; align-items: flex-start; margin-bottom: 8px; color: {text_color}")
-                bullet = soup.new_tag("span", style=f"color: {primary}; margin-right: 8px; flex-shrink: 0; font-size: 18px; line-height: 1.6")
+                item = soup.new_tag("section", style=f"display: flex; align-items: flex-start; color: {text_color}")
+                if is_overview:
+                    item["class"] = ["article-overview-item"]
+                else:
+                    item["style"] += "; margin-bottom: 8px"
+                bullet_size = 15 if is_overview else 18
+                bullet = soup.new_tag("span", style=f"color: {primary}; margin-right: 8px; flex-shrink: 0; font-size: {bullet_size}px; line-height: 1.6")
                 bullet.string = "•"
                 content = soup.new_tag("span", style="flex: 1")
                 for child in list(li.children):
@@ -387,22 +434,74 @@ class WeChatConverter:
 
         return str(soup)
 
+    def _format_bulleted_references(self, html: str) -> str:
+        """Merge explicit sources and inline citations into one list at the end."""
+        soup = BeautifulSoup(html, "html.parser")
+        references = {}
+        for heading in soup.find_all(["h2", "h3", "h4"]):
+            source_list = heading.find_next_sibling()
+            if heading.get_text(strip=True) != "参考链接" or not source_list or source_list.name != "ul":
+                continue
+            for item in source_list.find_all("li", recursive=False):
+                for link in item.find_all("a", href=True):
+                    href, label = link["href"], link.get_text(" ", strip=True)
+                    link.replace_with(f"{label} {href}" if label and label != href else href)
+                label = item.get_text(" ", strip=True)
+                urls = re.findall(r"https?://\S+", label)
+                if label:
+                    references.setdefault(urls[0] if len(urls) == 1 else label, label)
+            heading.decompose()
+            source_list.decompose()
+
+        numbered = {}
+        for link in soup.find_all("a", href=True):
+            href = link["href"]
+            if not href.startswith(("https://", "http://")):
+                continue
+            label = link.get_text(" ", strip=True)
+            references.setdefault(href, f"{label} {href}" if label and label != href else href)
+            number = numbered.setdefault(href, len(numbered) + 1)
+            primary = self._theme.colors.get("primary", "#2563eb")
+            marker = soup.new_tag("sup", style=f"color: {primary}; font-size: 12px")
+            marker.string = f"[{number}]"
+            link.replace_with(label, marker)
+
+        if references:
+            block = soup.new_tag("section", attrs={"class": "article-reference-block"})
+            title = soup.new_tag("p", attrs={"class": "article-reference-title"})
+            title.string = "参考链接"
+            source_list = soup.new_tag("ul", attrs={"class": "article-references"})
+            for key, label in references.items():
+                item = soup.new_tag("li")
+                if key in numbered:
+                    item.append(f"[{numbered[key]}] ")
+                name, sep, address = label.partition(" " + key) if key.startswith(("http://", "https://")) else ("", "", "")
+                if sep and name:
+                    description = soup.new_tag("span", attrs={"class": "reference-name"})
+                    description.string = name
+                    item.extend([description, " "])
+                    label = (sep + address).strip()
+                if key.startswith(("http://", "https://")):
+                    url = soup.new_tag("span", attrs={"class": "reference-url"})
+                    url.string = label
+                    item.append(url)
+                else:
+                    item.append(label)
+                source_list.append(item)
+            block.extend([title, source_list])
+            soup.append(block)
+        return str(soup)
+
     # -- Dark mode --
 
     def _inject_darkmode(self, html: str) -> str:
-        """Inject data-darkmode-* attributes for WeChat dark mode.
-
-        WeChat auto-inverts colors in dark mode, which often breaks
-        designed color schemes. Explicit darkmode attributes tell WeChat
-        exactly what colors to use instead of guessing.
-        """
+        """Record dark colors for the preview and client-side styling."""
         darkmode = self._theme.colors.get("darkmode", {})
         if not darkmode:
             return html
 
         soup = BeautifulSoup(html, "html.parser")
         dm_text = darkmode.get("text", "#c8c8c8")
-        dm_bg = darkmode.get("background", "#1e1e1e")
         dm_primary = darkmode.get("primary", "#6aadff")
 
         # Body-level elements (p, li, section, span)
@@ -436,9 +535,26 @@ class WeChatConverter:
             bq["data-darkmode-bgcolor"] = dm_quote_bg
             bq["data-darkmode-color"] = dm_text
 
-        # Strong/em with primary color
+        # Strong with primary color
         for strong in soup.find_all("strong"):
-            strong["data-darkmode-color"] = dm_primary
+            strong["data-darkmode-color"] = dm_text if "heading_bg" in darkmode else dm_primary
+
+        if "heading_bg" in darkmode:
+            dm_muted = darkmode.get("text_light", dm_text)
+            dm_border = darkmode.get("quote_border", "#443d32")
+            for tag in soup.select("h2, th"):
+                tag["data-darkmode-bgcolor"] = darkmode["heading_bg"]
+                tag["data-darkmode-color"] = dm_text
+            for tag in soup.select("code"):
+                if not tag.find_parent("pre"):
+                    tag["data-darkmode-bgcolor"] = dm_code_bg
+                    tag["data-darkmode-bordercolor"] = dm_border
+            for tag in soup.select("blockquote, pre, th, td"):
+                tag["data-darkmode-bordercolor"] = dm_border
+            for tag in soup.select("p.media-caption, p.article-reference-title, span.reference-name"):
+                tag["data-darkmode-color"] = dm_muted
+            for tag in soup.select("span.reference-url"):
+                tag["data-darkmode-color"] = darkmode.get("reference_url", dm_muted)
 
         return str(soup)
 
@@ -449,6 +565,10 @@ class WeChatConverter:
         外层仍是 <div class="codehilite">）、fenced_code 的 language-* class。
         """
         soup = BeautifulSoup(html, "html.parser")
+        if getattr(self._theme, "_raw_data", {}).get("quote_as_card"):
+            # Keep card styles without WeChat's quote decoration.
+            for quote in soup.find_all("blockquote"):
+                quote.name = "section"
         for div in soup.find_all("div"):
             div.name = "section"
         for el in soup.find_all(attrs={"class": True}):
@@ -500,6 +620,8 @@ class WeChatConverter:
 
     def _process_gallery(self, text: str) -> str:
         """Render :::gallery image blocks as native horizontal scrolling sections."""
+        compact_captions = "p.media-caption" in self._css_rules
+
         def replace_gallery(match):
             soup = BeautifulSoup(self._markdown_to_html(match.group(1)), "html.parser")
             images = soup.find_all("img")
@@ -512,15 +634,36 @@ class WeChatConverter:
                 return str(images[0])
             output = BeautifulSoup("", "html.parser")
             group = output.new_tag("section", style="margin: 16px 0; max-width: 100%")
-            track = output.new_tag("section", style="box-sizing: border-box; width: 100%; max-width: 100%; overflow-x: scroll; -webkit-overflow-scrolling: touch; white-space: nowrap; font-size: 0; padding: 0 0 8px")
+            track = output.new_tag("section", style="box-sizing: border-box; width: 100%; max-width: 100%; overflow-x: scroll; -webkit-overflow-scrolling: touch; white-space: nowrap; font-size: 0")
+            if not compact_captions:
+                track["style"] += "; padding: 0 0 8px"
+            labeled = "p.gallery-image-label" in self._css_rules and any(img.get("title", "").strip() for img in images)
             for index, img in enumerate(images):
                 gap = "12px" if index < len(images) - 1 else "0"
-                img["style"] = f"display: inline-block; margin: 0 {gap} 0 0; max-width: 88%; width: auto; height: auto; max-height: 360px; object-fit: contain; border-radius: 12px; vertical-align: middle"
-                track.append(img.extract())
+                image_style = "width: auto; height: auto; max-height: 360px; object-fit: contain; border-radius: 12px"
+                if labeled:
+                    slide = output.new_tag("section", attrs={"class": "gallery-slide"})
+                    slide["style"] = f"display: inline-block; width: 88%; max-width: 88%; margin-right: {gap}; vertical-align: top; white-space: normal"
+                    img["style"] = f"display: block; margin: 0; max-width: 100%; {image_style}"
+                    label = img.attrs.pop("title", "").strip()
+                    slide.append(img.extract())
+                    if label:
+                        title = output.new_tag("p", attrs={"class": "media-caption gallery-image-label"})
+                        title.string = label
+                        slide.append(title)
+                    track.append(slide)
+                else:
+                    img["style"] = f"display: inline-block; margin: 0 {gap} 0 0; max-width: 88%; {image_style}; vertical-align: middle"
+                    track.append(img.extract())
             group.append(track)
-            hint = output.new_tag("p", style="margin: 8px 0 0; padding: 0; color: #666666; font-size: 12px; line-height: 1.6; text-align: center")
-            hint.string = f"左右滑动查看 · 共 {len(images)} 张"
-            group.append(hint)
+            if compact_captions:
+                hint = output.new_tag("p", attrs={"class": "media-caption gallery-caption"})
+                hint.string = f"横滑看 {len(images)} 张"
+                group.insert(0, hint)
+            else:
+                hint = output.new_tag("p", style="margin: 8px 0 0; padding: 0; color: #666666; font-size: 12px; line-height: 1.6; text-align: center")
+                hint.string = f"左右滑动查看 · 共 {len(images)} 张"
+                group.append(hint)
             return str(group)
 
         return re.sub(r":::gallery\n(.*?)\n:::", replace_gallery, text, flags=re.DOTALL)
@@ -812,6 +955,18 @@ def preview_html(body_html: str, theme: Theme) -> str:
     Wrap body content in a full HTML document for browser preview.
     This is only for local preview — NOT for WeChat publishing.
     """
+    dark = theme.colors.get("darkmode", {})
+    dark_css = ""
+    if "heading_bg" in dark:
+        bg, text = dark.get("background", "#191919"), dark.get("text", "#e7e4de")
+        rules = [f"body {{ color-scheme: dark; background: {bg}; color: {text}; }}"]
+        for key, prop in (("color", "color"), ("bgcolor", "background-color"), ("bordercolor", "border-color")):
+            values = set(re.findall(rf'data-darkmode-{key}="(#[0-9a-fA-F]{{3,8}}|transparent)"', body_html))
+            for value in sorted(values):
+                opaque = " opacity: 1 !important;" if key == "color" and value in (dark.get("text_light"), dark.get("reference_url")) else ""
+                rules.append(f'[data-darkmode-{key}="{value}"] {{ {prop}: {value} !important;{opaque} }}')
+        dark_css = "\n@media (prefers-color-scheme: dark) {\n" + "\n".join(rules) + "\n}"
+
     return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -820,6 +975,7 @@ def preview_html(body_html: str, theme: Theme) -> str:
     <title>Preview</title>
     <style>
 {theme.base_css}
+{dark_css}
     </style>
 </head>
 <body>

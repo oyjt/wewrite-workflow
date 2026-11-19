@@ -250,11 +250,11 @@ wewrite themes     # 列出主题名称
 | 风格 | `bauhaus`、`focus-red`、`midnight` |
 | 专属 | `impeccable`、`lobster-notes`、`juya-ai`、`ithome` |
 
-所有主题均支持微信暗黑模式。`wewrite learn-theme <url>` 学到的新主题存在 `~/.wewrite/themes/`，加载时优先于内置主题。
+`wewrite learn-theme <url>` 学到的新主题存在 `~/.wewrite/themes/`，加载时优先于内置主题。
 
-`juya-ai` 参考橘鸦 AI 的公众号排版，提供暖白正文容器、圆角标题条、摘要卡片与术语标签。
-同一事件的多张图片可用 `:::gallery` 包住 Markdown 图片，自动生成横向滚动区域和
-“左右滑动查看 · 共 N 张”提示；单张图片不显示提示。详见 [主题与写作指南](docs/juya-ai-style.md)。
+`juya-ai` 参考橘鸦 AI 的公众号排版，提供圆角标题条、摘要卡片与术语标签。正文跟随微信页面配色，本地预览随系统切换明暗。
+关键图单张铺满正文，对照图上下排，补充图片可用 `:::gallery` 横滑。图组上方自动显示「横滑看 N 张」，
+默认只显示这一条组说明。需要识图或补充出处时，可用 Markdown 图片的 title 为对应图片加短标签。详见 [主题与写作指南](docs/juya-ai-style.md)。
 
 另有四个排版细节自动处理：**产物合规校验**（`wewrite validate`，preview/publish 自动跑，拦截会被微信过滤的写法）、**粘贴加固**（preview 产物自动做 `<span leaf>` 包裹，复制进编辑器不掉样式；API 发布路径无需）、**GIF 角标**（动图自动加右上角标签）、**H2 章节编号**（主题 YAML 设 `section_numbering: true` 启用）。
 

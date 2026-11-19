@@ -40,7 +40,7 @@ spacing_preference: "引用、图片和图注的间距偏好"
 engagement_footer:
   enabled: false           # 只有账号已要求时启用
   text: ["简短点赞收藏引导", "关注引导"]
-  placement: "after_references"
+  placement: "after_references"   # juya-ai 使用 before_references
   account_card_blank_lines: 3  # 留空行供用户手动插入名片，不写可见占位提示
 ```
 
