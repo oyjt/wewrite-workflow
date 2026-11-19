@@ -2,6 +2,7 @@
 config.yaml
 
 # User data (generated at runtime, not tracked)
+/.wewrite-local/
 style.yaml
 history.yaml
 playbook.md
