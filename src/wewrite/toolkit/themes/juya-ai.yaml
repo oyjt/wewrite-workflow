@@ -80,11 +80,31 @@ base_css: |
   p.article-overview-title { margin: 10px 0 5px; padding: 0; }
   section.article-overview-item { font-size: 15px; line-height: 1.65; margin-bottom: 4px; }
   section.article-reference-block { margin-top: 24px; }
-  p.article-reference-title { font-size: 13px; line-height: 1.6; color: inherit; opacity: 0.78; font-weight: 700; margin: 0 0 6px; padding: 0; }
-  ul.article-references { list-style: disc; color: inherit; margin: 0; padding-left: 18px; }
-  ul.article-references li { font-size: 12px; line-height: 1.65; color: inherit; margin: 0 0 4px; overflow-wrap: anywhere; }
-  span.reference-name { color: inherit; opacity: 0.82; font-weight: 600; }
-  span.reference-url { color: inherit; opacity: 0.75; }
+  p.article-reference-title {
+    font-size: 13px;
+    line-height: 1.6;
+    color: inherit;
+    opacity: 0.78;
+    font-weight: 700;
+    margin: 0 0 6px;
+    padding: 0;
+    text-align: left;
+    text-align-last: left;
+    letter-spacing: normal;
+  }
+  ul.article-references { list-style: disc; color: #777; margin: 0; padding-left: 18px; }
+  ul.article-references li {
+    font-size: 12px;
+    line-height: 1.6;
+    color: inherit;
+    margin: 0 0 7px;
+    text-align: left;
+    text-align-last: left;
+    letter-spacing: normal;
+    overflow-wrap: anywhere;
+  }
+  span.reference-name { color: #5f5b55; font-weight: 600; }
+  span.reference-url { display: block; color: #6f6b65; font-weight: 400; }
   p { font-size: 15px; line-height: 1.8; color: inherit; margin: 8px 0; padding: 0; letter-spacing: 0.04em; text-align: left; }
   strong { color: inherit; font-weight: 700; }
   em { color: inherit; font-style: normal; }

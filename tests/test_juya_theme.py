@@ -112,6 +112,15 @@ def test_juya_gallery_caption_and_reference_list_survive_paste():
     names = soup.ul.select('span[style*="font-weight: 600"]')
     assert [name.get_text() for name in names] == ["正式公告", "说明"]
     assert all("https://" not in name.get_text() for name in names)
+    items = soup.ul.find_all("li")
+    for item in [soup.ul.find_previous_sibling("p"), *items]:
+        assert "text-align: left" in item["style"]
+        assert "text-align-last: left" in item["style"]
+        assert "letter-spacing: normal" in item["style"]
+    for item in items:
+        url = item.select_one('span[style*="display: block"]')
+        assert url.get_text().startswith("https://")
+        assert "font-weight: 400" in url["style"]
     assert not [issue for issue in validate_html(str(soup)) if issue["level"] == "ERROR"]
 
 
